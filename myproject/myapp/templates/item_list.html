@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <br>
+    <title>Tasks API</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body>
+    <h1><center>Tasks API</center></h1>
+    <br><br><br>
+    <div style="display: table; margin-right: auto; margin-left: auto">
+        <button type="button" class="btn btn-primary" data-toggle="modal" onclick="createTaskModal()" style="margin-left: 10px;">
+            Create Task
+        </button>
+        <button type="button" class="btn btn-warning" data-toggle="modal" onclick="editTaskModal()" style="margin-left: 10px;">
+            Edit Task
+        </button>
+        <button type="button" class="btn btn-danger" data-toggle="modal" onclick="deleteTaskModal()" style="margin-left: 10px;">
+            Delete Task
+        </button>
+        <button type="button" class="btn btn-success" data-toggle="modal" onclick="viewTaskModal()" style="margin-left: 10px;">
+            View Task
+        </button>
+        </div>
+    <br>
+    <table id="tasks-table" style="border: 1px solid black; width: 70%; margin: 0px auto;" class="table table-striped table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <br>
+
+    <!-- Create Task Modal -->
+    <div class="modal" tabindex="-1" role="dialog" id="create-task-modal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Create new task</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label for="create-title" style="width: 100px;">Title:</label>
+                    <input type="text" style="align-self: center;" id="create-title">
+                </div>
+                <div>
+                    <label for="create-description" style="width: 100px;">Description:</label>
+                    <input id="create-description"></input>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="submitCreateTask()">Create</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeCreateTaskModal()">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- Edit Task Modal -->
+    <div class="modal" tabindex="-1" role="dialog" id="edit-task-modal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Edit task</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label for="edit-id" style="width: 100px;">ID:</label>
+                    <input type="number" id="edit-id"></input>
+                </div>
+                <div>
+                    <label for="edit-title" style="width: 100px;">Title:</label>
+                    <input type="text" id="edit-title">
+                </div>
+                <div>
+                    <label for="edit-description" style="width: 100px;">Description:</label>
+                    <input id="edit-description"></input>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="submitEditTask()">Edit</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeEditTaskModal()">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- Delete Task Modal -->
+    <div class="modal" tabindex="-1" role="dialog" id="delete-task-modal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Delete task</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label for="delete-id" style="width: 100px;">ID:</label>
+                    <input type="number" id="delete-id"></input>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="submitDeleteTask()">Delete</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeDeleteTaskModal()">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Task Modal -->
+      <div class="modal" tabindex="-1" role="dialog" id="view-task-modal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">View task</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label for="view-id" style="width: 100px;">ID:</label>
+                    <input type="number" id="view-id"></input>
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="submitViewTask()">View</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeViewTaskModal()">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <script>
+        let currentTaskId = null;
+        function loadTasks() {
+            fetch('/tasks/')
+                .then(response => response.json())
+                .then(data => {
+                    let tasksTable = document.getElementById('tasks-table');
+                    let tasks = data;
+                    let tasksBody = tasksTable.getElementsByTagName('tbody')[0];
+                    tasksBody.innerHTML = '';
+                    tasks.forEach(task => {
+                        let taskRow = document.createElement('tr');
+                        let taskId = document.createElement('td');
+                        let taskTitle = document.createElement('td');
+                        let taskDescription = document.createElement('td');
+                        let taskActions = document.createElement('td');
+                        taskId.innerHTML = task.id;
+                        taskTitle.innerHTML = task.name;
+                        taskDescription.innerHTML = task.description;
+                        taskRow.appendChild(taskId);
+                        taskRow.appendChild(taskTitle);
+                        taskRow.appendChild(taskDescription);
+                        tasksBody.appendChild(taskRow);
+                    });
+                });
+        }
+        loadTasks();
+
+        function createTaskModal() {
+            var modal = document.getElementById("create-task-modal");
+            modal.style.display = "block";
+        }
+
+        function editTaskModal() {
+            var modal = document.getElementById("edit-task-modal");
+            modal.style.display = "block";
+        }
+
+        function deleteTaskModal() {
+            var modal = document.getElementById("delete-task-modal");
+            modal.style.display = "block";
+        }
+        
+        function viewTaskModal() {
+            var modal = document.getElementById("view-task-modal");
+            modal.style.display = "block";
+        }
+
+        function closeCreateTaskModal() {
+            var modal = document.getElementById("create-task-modal");
+            modal.style.display = "none";
+        }
+
+        function closeEditTaskModal() {
+            var modal = document.getElementById("edit-task-modal");
+            modal.style.display = "none";
+        }
+
+        function closeDeleteTaskModal() {
+            var modal = document.getElementById("delete-task-modal");
+            modal.style.display = "none";
+        }
+
+        function closeViewTaskModal() {
+            var modal = document.getElementById("view-task-modal");
+            modal.style.display = "none";
+        }
+
+        function submitCreateTask() {
+            let name = document.getElementById("create-title").value;
+            let description = document.getElementById("create-description").value;
+            let task = {name: name, description: description};
+            console.log(JSON.stringify(task));
+            fetch('/tasks/create/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(task)
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadTasks();
+                closeCreateTaskModal();
+                document.getElementById("create-title").value = '';
+                document.getElementById("create-description").value = '';
+            })
+            .catch(error => console.log(error));
+        }
+
+        function submitEditTask() {
+            let taskId = document.getElementById("edit-id").value;
+            let name = document.getElementById("edit-title").value;
+            let description = document.getElementById("edit-description").value;
+            let task = {name: name, description: description};
+            fetch(`/tasks/${taskId}/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(task)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // load the tasks again to update the table
+                loadTasks();
+                // close the edit task modal
+                closeEditTaskModal();
+                // clear the form fields
+                document.getElementById("edit-title").value = '';
+                document.getElementById("edit-description").value = '';
+            })
+            .catch(error => console.log(error));
+        }
+
+        function submitDeleteTask() {
+            let taskId = document.getElementById("delete-id").value;
+            fetch(`/tasks/${taskId}/`, {
+                method: 'DELETE'
+            })
+            .then(data => {
+                // load the tasks again to update the table
+                loadTasks();
+                closeDeleteTaskModal();
+            })
+            .catch(error => console.log(error));
+        }
+
+        function submitViewTask() {
+            let taskId = document.getElementById("view-id").value;
+            window.location.href = "http://127.0.0.1:8000/task/detail/" + taskId +"/";
+            closeViewTaskModal();
+        }
+
+    </script>
+</body>
+</html>
